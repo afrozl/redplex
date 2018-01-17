@@ -14,7 +14,7 @@ import (
 // The Dialer is a type that can create a TCP connection to the Redis server.
 type Dialer interface {
 	// Dial attempts to create a connection to the server.
-	Dial() (net.Conn, error)
+	DialURL() (net.Conn, error)
 }
 
 // defaultTimeout is used in the DirectDialer
@@ -23,24 +23,23 @@ const defaultTimeout = time.Second * 5
 
 // DirectDialer creates a direct connection to a single Redis server or IP.
 type DirectDialer struct {
-	network string
-	address string
+	rawUrl string
 	timeout time.Duration
 }
 
 // NewDirectDialer creates a DirectDialer that dials to the given address.
 // If the timeout is 0, a default value of 5 seconds will be used.
-func NewDirectDialer(network string, address string, timeout time.Duration) DirectDialer {
+func NewDirectDialer(rawUrl string, timeout time.Duration) DirectDialer {
 	if timeout == 0 {
 		timeout = defaultTimeout
 	}
 
-	return DirectDialer{network, address, timeout}
+	return DirectDialer{rawUrl, timeout}
 }
 
 // Dial implements Dialer.Dial
-func (d DirectDialer) Dial() (net.Conn, error) {
-	return net.DialTimeout(d.network, d.address, d.timeout)
+func (d DirectDialer) DialURL() (net.Conn, error) {
+	return net.DialTimeout(d.rawUrl, d.timeout)
 }
 
 // The SentinelDialer dials into the Redis cluster master as defined by
